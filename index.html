@@ -1,5 +1,3 @@
-<iframe src="jeremy.html" title="Player age and injury recovery time"></iframe>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +15,6 @@
       --accent: #c94b2c;
       --accent-dark: #8f2f1c;
       --accent-soft: #fff0e8;
-      --gold-soft: #fff7dc;
       --shadow: 0 18px 45px rgba(31, 41, 51, 0.10);
       --radius: 22px;
     }
@@ -213,8 +210,7 @@
       gap: 24px;
       padding: 30px 34px 24px;
       border-bottom: 1px solid var(--border);
-      background:
-        linear-gradient(135deg, rgba(255, 240, 232, 0.72), rgba(255, 255, 255, 0.95));
+      background: linear-gradient(135deg, rgba(255, 240, 232, 0.72), rgba(255, 255, 255, 0.95));
     }
 
     .section-kicker {
@@ -267,7 +263,7 @@
     .chart-frame iframe {
       display: block;
       width: 100%;
-      min-height: 860px;
+      min-height: 900px;
       border: 0;
       border-radius: 16px;
       background: #fff;
@@ -335,13 +331,8 @@
         width: min(100% - 28px, 1180px);
       }
 
-      .topbar-inner,
-      .section-header {
-        grid-template-columns: 1fr;
-        flex-direction: column;
-      }
-
       .topbar-inner {
+        flex-direction: column;
         align-items: flex-start;
       }
 
@@ -354,6 +345,10 @@
         grid-template-columns: repeat(2, 1fr);
       }
 
+      .section-header {
+        grid-template-columns: 1fr;
+      }
+
       .tag-list {
         justify-content: flex-start;
         min-width: 0;
@@ -364,7 +359,7 @@
       }
 
       .chart-frame iframe {
-        min-height: 760px;
+        min-height: 800px;
       }
     }
 
@@ -415,7 +410,7 @@
 
       <div class="hero-actions">
         <a class="button button-primary" href="#burden">View Rohan’s visual</a>
-        <a class="button button-secondary" href="#notes">Design goals</a>
+        <a class="button button-secondary" href="#notes">View design goals</a>
       </div>
 
       <div class="summary-grid" aria-label="Project summary">
@@ -423,14 +418,17 @@
           <div class="metric-label">Coverage</div>
           <div class="metric-value">2020/21–2024/25</div>
         </div>
+
         <div class="metric-card">
           <div class="metric-label">Leagues</div>
           <div class="metric-value">Top 5 Europe</div>
         </div>
+
         <div class="metric-card">
           <div class="metric-label">Focus</div>
           <div class="metric-value">Injury burden</div>
         </div>
+
         <div class="metric-card">
           <div class="metric-label">Interaction</div>
           <div class="metric-value">Hover + click</div>
@@ -448,6 +446,7 @@
             certain months or seasons stand out as outliers.
           </p>
         </div>
+
         <div class="tag-list">
           <span class="tag">Monthly patterns</span>
           <span class="tag">Outliers</span>
@@ -460,7 +459,7 @@
           <h3>Add Sagar’s exported HTML here</h3>
           <p>
             Once Sagar exports his Altair chart, upload it to this GitHub repo and name it
-            <code>sagar.html</code>. Then replace this placeholder with:
+            <code>sagar.html</code>. Then replace this placeholder with an iframe.
           </p>
           <p><code>&lt;iframe src="sagar.html"&gt;&lt;/iframe&gt;</code></p>
         </div>
@@ -477,6 +476,7 @@
             Click a cell to lock the club detail chart and see which clubs drove that value.
           </p>
         </div>
+
         <div class="tag-list">
           <span class="tag">Click to lock</span>
           <span class="tag">Club drilldown</span>
@@ -486,7 +486,7 @@
 
       <div class="chart-frame">
         <iframe
-          src="rohan_bulleted_injury_burden_dashboard.html"
+          src="rohan_injury_burden_dashboard.html"
           title="Interactive injury burden heatmap and club drilldown">
         </iframe>
       </div>
@@ -502,6 +502,7 @@
             and position while showing whether older players recover differently.
           </p>
         </div>
+
         <div class="tag-list">
           <span class="tag">Recovery days</span>
           <span class="tag">Age patterns</span>
@@ -514,7 +515,7 @@
           <h3>Add Jeremy’s exported HTML here</h3>
           <p>
             Once Jeremy exports his dashboard, upload it to this GitHub repo and name it
-            <code>jeremy.html</code>. Then replace this placeholder with:
+            <code>jeremy.html</code>. Then replace this placeholder with an iframe.
           </p>
           <p><code>&lt;iframe src="jeremy.html"&gt;&lt;/iframe&gt;</code></p>
         </div>
