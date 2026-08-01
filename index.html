@@ -98,7 +98,7 @@
     p.lead {
       font-size: 17px;
       color: #3b4450;
-      max-width: 820px;
+      max-width: 880px;
       line-height: 1.62;
     }
 
@@ -159,7 +159,7 @@
       padding: 13px 16px;
       font-size: 16px;
       font-style: italic;
-      max-width: 860px;
+      max-width: 900px;
       margin: 14px 0 18px;
       line-height: 1.55;
     }
@@ -233,9 +233,21 @@
       border-radius: 14px;
       padding: 18px;
       line-height: 1.5;
+      box-shadow: 0 8px 20px rgba(29, 38, 48, 0.05);
     }
 
     .takeaway b { color: var(--red); }
+
+    .mini-note {
+      color: #4b5563;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      max-width: 900px;
+      line-height: 1.55;
+      margin-top: 18px;
+    }
 
     footer {
       background: var(--navy);
@@ -337,6 +349,11 @@
       Player injury rates across Europe's top five leagues will peak during the winter months of the season.
     </div>
 
+    <p class="lead">
+      This view looks at injury timing across the season. The goal is to see whether injury volume rises during
+      heavier winter periods and whether that pattern is consistent across leagues.
+    </p>
+
     <div class="hint">
       🖱 Interact with Sagar's visual to compare injury timing across months, leagues, and seasons.
     </div>
@@ -361,8 +378,15 @@
       Premier League clubs have the highest average injury burden among Europe's top five leagues.
     </div>
 
+    <p class="lead">
+      My visual focuses on injury burden across Europe's top five leagues. Instead of only counting the number of injuries,
+      I looked at average games missed per club-season. That makes the view more useful because it shows how much injuries
+      actually affected team availability over a season.
+    </p>
+
     <div class="hint">
-      🖱 Click a league-season cell to lock the club drilldown · hover for exact values.
+      How to read this view: darker red means higher injury burden. Click a league-season cell to lock the club drilldown
+      on the right. Hover over cells or bars to see exact values.
     </div>
 
     <div class="chart-shell">
@@ -375,6 +399,31 @@
         src="rohan.html"
         title="Rohan injury burden heatmap and club drilldown">
       </iframe>
+    </div>
+
+    <div class="takeaway-grid">
+      <div class="takeaway">
+        <b>Premier League stands out.</b><br>
+        The Premier League has the highest overall injury burden across the five leagues, especially in the 2023/24 season.
+      </div>
+
+      <div class="takeaway">
+        <b>La Liga is generally lower.</b><br>
+        La Liga shows some of the lowest average games missed values, with the 2022/23 season being the lowest league-season
+        combination in the dataset.
+      </div>
+
+      <div class="takeaway">
+        <b>Club detail matters.</b><br>
+        The drilldown shows whether a league-season value was spread across many clubs or driven by a few teams with especially
+        high games missed.
+      </div>
+    </div>
+
+    <div class="mini-note">
+      Overall, this view supports my hypothesis that the Premier League carries the heaviest injury burden among the top five
+      European leagues. The club drilldown adds context by showing which teams drove each league-season result, so the visual
+      works as both a league comparison and a way to investigate specific club-level contributors.
     </div>
   </section>
 
