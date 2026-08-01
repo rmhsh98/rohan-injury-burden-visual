@@ -1,568 +1,2894 @@
-from pathlib import Path
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>European Football Injury Analysis — W209</title>
+<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+<style>
+  :root { --navy:#1d2630; --red:#b2182b; --grey:#6b7280; --bg:#fbf9f4; }
+  * { box-sizing: border-box; }
+  body { font-family:'Helvetica Neue', Arial, sans-serif; margin:0; color:var(--navy);
+          background:var(--bg); scroll-behavior:smooth; }
+  nav { position:sticky; top:0; z-index:10; background:var(--navy); color:#fff;
+         display:flex; gap:22px; align-items:center; padding:12px 28px; flex-wrap:wrap; }
+  nav .brand { font-weight:700; margin-right:12px; }
+  nav a { color:#e8eaee; text-decoration:none; font-size:14px; }
+  nav a:hover { color:#fff; text-decoration:underline; }
+  section { max-width:960px; margin:0 auto; padding:56px 24px; }
+  .kicker { color:var(--red); font-weight:700; font-size:13px; text-transform:uppercase;
+             letter-spacing:.06em; }
+  h1 { font-size:38px; margin:8px 0 14px; line-height:1.15; }
+  h2 { font-size:27px; margin:8px 0 12px; }
+  p.lead { font-size:17px; color:#3b4450; max-width:760px; }
+  .hypo { background:#fff; border-left:4px solid var(--red); padding:12px 16px;
+           font-size:16px; font-style:italic; max-width:760px; margin:14px 0 22px; }
+  .stats { display:flex; gap:20px; flex-wrap:wrap; margin-top:26px; }
+  .stat { background:#fff; border:1px solid #e6e2d8; border-radius:10px;
+           padding:18px 26px; min-width:170px; }
+  .stat b { display:block; font-size:30px; color:var(--red); }
+  .stat span { color:var(--grey); font-size:13px; }
+  ol.howto li { margin-bottom:10px; max-width:760px; }
+  .hint { color:var(--grey); font-size:12.5px; background:#f1efe8;
+           border-left:3px solid var(--red); padding:5px 10px; margin:18px 0 4px;
+           max-width:760px; }
+  .vega-embed { background:#fff; padding:14px; border:1px solid #e6e2d8;
+                 border-radius:10px; margin-top:6px; }
+  /* View 1 embed: dropdown above, no canvas stretch */
+  #viewA.vega-embed { display:flex; flex-direction:column-reverse; align-items:flex-start; }
+  #viewA form.vega-bindings { margin:0 0 8px; font-size:13px; }
+  #viewB form.vega-bindings { margin:6px 0 0; font-size:13px; }
+  form.vega-bindings label { margin-right:10px; }
+  .placeholder { background:#fff; border:2px dashed #c9c3b4; border-radius:10px;
+                  color:var(--grey); padding:60px 24px; text-align:center; font-size:15px;
+                  max-width:860px; }
+  footer { background:var(--navy); color:#c7cdd6; text-align:center; padding:22px;
+            font-size:13px; margin-top:40px; }
+  footer a { color:#fff; }
+  .btn { display:inline-block; background:var(--red); color:#fff; padding:10px 20px;
+          border-radius:6px; text-decoration:none; font-weight:600; margin-top:10px; }
+</style></head><body>
 
-html = r"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>European Football Injury Burden Dashboard</title>
+<nav>
+  <span class="brand">⚽ Football Injury Analysis</span>
+  <a href="#hero">Home</a>
+  <a href="#overview">Overview</a>
+  <a href="#hypothesis-1">Hypothesis 1</a>
+  <a href="#hypothesis-2">Hypothesis 2</a>
+  <a href="#hypothesis-3">Hypothesis 3</a>
+  <a href="#usability">Usability</a>
+</nav>
 
-  <style>
-    :root {
-      --bg: #f7f3ee;
-      --card: #ffffff;
-      --ink: #1f2933;
-      --muted: #5b6472;
-      --border: #e3d8cc;
-      --accent: #c94b2c;
-      --accent-dark: #8f2f1c;
-      --accent-soft: #fff0e8;
-      --shadow: 0 18px 45px rgba(31, 41, 51, 0.10);
-      --radius: 22px;
+<section id="hero">
+  <div class="kicker">Data Investigation</div>
+  <h1>What Do 15,603 Injuries Reveal About Europe's Top Five Leagues?</h1>
+  <p class="lead">Injuries shape seasons, budgets, and careers. Using five seasons of
+  injury records from the Premier League, La Liga, Serie A, Bundesliga, and Ligue 1,
+  we test when injuries peak, which leagues carry the heaviest burden, and whether
+  age really slows recovery — with an answer that surprised us.</p>
+  <a class="btn" href="#overview">Explore the Data</a>
+</section>
+
+<section id="how">
+  <div class="kicker">Start here</div>
+  <h2>How to Use This Site</h2>
+  <ol class="howto">
+    <li><b>Begin with the Overview</b> for the key numbers that frame the dataset.</li>
+    <li><b>Read each hypothesis in order:</b> scan the title and opening paragraph,
+        then spend time with the interactive charts so the story and evidence stay connected.</li>
+    <li><b>Hypothesis 1</b> examines <b>seasonal timing</b> — when in the year injuries peak, by league.</li>
+    <li><b>Hypothesis 2</b> examines <b>injury burden</b> — which leagues and clubs lose the most games.</li>
+    <li><b>Hypothesis 3</b> examines <b>age and recovery</b> — whether older players take longer to heal.</li>
+    <li><b>Takeaways</b> live in chart titles and subtitles; hover, click, and use the
+        controls next to each chart to interrogate the evidence yourself.</li>
+  </ol>
+</section>
+
+<section id="overview">
+  <div class="kicker">Overview</div>
+  <h2>The Injury Landscape, 2020/21–2024/25</h2>
+  <p class="lead">Every matchday, clubs manage a quiet second competition: keeping players
+  on the pitch. We compiled five seasons of injury spells across Europe's top five
+  leagues to ask when injuries strike, where the burden falls, and how bodies of
+  different ages recover.</p>
+  <div class="stats">
+    <div class="stat"><b>15,603</b><span>injury spells analyzed</span></div>
+    <div class="stat"><b>4,081</b><span>players tracked</span></div>
+    <div class="stat"><b>145</b><span>clubs · 5 leagues</span></div>
+    <div class="stat"><b>5</b><span>seasons covered</span></div>
+  </div>
+</section>
+
+<section id="hypothesis-1">
+  <div class="kicker">Hypothesis 1 · Sagar Patel</div>
+  <h2>Do Injuries Peak in the Winter Months?</h2>
+  <div class="hypo">Player injury rates across Europe's top five leagues will peak
+  during the winter months of the season.</div>
+  <div class="placeholder">Interactive seasonal-pattern visualization — embed goes here.<br>
+  <small>(vegaEmbed('#viewH1', spec) or an iframe to the H1 deployment)</small></div>
+</section>
+
+<section id="hypothesis-2" class="wide-section">
+  <div class="kicker">Hypothesis 2 · Rohan Maheshwari</div>
+  <h2>Which League Carries the Heaviest Injury Burden?</h2>
+  <div class="hypo">Premier League clubs have the highest average injury burden among
+  Europe's top five leagues.</div>
+
+  <div class="hint">
+    🖱 Click a league-season cell to lock the club drilldown · hover for exact values
+  </div>
+
+  <div class="chart-embed-wide">
+    <iframe
+      src="{{ url_for('static', filename='rohan.html') }}"
+      title="Rohan injury burden dashboard">
+    </iframe>
+  </div>
+</section>
+
+<section id="hypothesis-3">
+  <div class="kicker">Hypothesis 3 · Jeremy Lee</div>
+  <h2>Do Older Players Really Take Longer to Recover?</h2>
+  <div class="hypo">In Europe's top five leagues, older players require significantly
+  longer injury recovery times compared to younger players.</div>
+  <p class="lead">The data says the opposite. Median recovery <b>falls</b> as players
+  age (r&nbsp;=&nbsp;-0.78) — and the reversal holds in all 8 injury families, all 5
+  leagues, and all 4 position groups. The explanation is selection: only severe youth
+  injuries get recorded, and the veterans still playing at this level are durable
+  survivors who get hurt <i>more often, but for less time</i>.</p>
+
+  <div class="hint">&#128433; Use the dropdown above the chart to test each injury
+  family · hover points for exact values</div>
+  <div id="viewA"></div>
+
+  <div class="hint">&#128433; Hover any heatmap cell for its full distribution ·
+  click a row to highlight that family in the arrow chart · switch its grouping with
+  the buttons below it</div>
+  <div id="viewB"></div>
+
+  <div class="hint">&#128433; Hover dots for exact rates and sample sizes</div>
+  <div id="viewC"></div>
+</section>
+
+<section id="usability">
+  <div class="kicker">Usability</div>
+  <h2>How Testing Reshaped These Visuals</h2>
+  <p class="lead">Nine usability sessions (three per member) drove this design: controls
+  were moved next to the charts they filter, visible hints now flag every interaction,
+  clicked selections get a dark outline, and ambiguous wording ("middle 50%",
+  arrow direction) was rewritten in plain language. The full study, task scripts, and
+  MoSCoW-prioritized findings are in the project report.</p>
+</section>
+
+<footer>
+  Data: European football injury records, 2020/21–2024/25 · DATASCI 209 Section 2 ·
+  Sagar Patel · Rohan Maheshwari · Jeremy Lee © 2026
+</footer>
+
+<script>
+vegaEmbed('#viewA', {
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json",
+  "config": {
+    "axis": {
+      "labelFontSize": 12,
+      "titleFontSize": 13
+    },
+    "title": {
+      "anchor": "start",
+      "fontSize": 15
+    },
+    "view": {
+      "continuousHeight": 300,
+      "continuousWidth": 300,
+      "stroke": null
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(255, 180, 115, 0.24), transparent 32rem),
-        radial-gradient(circle at top right, rgba(201, 75, 44, 0.14), transparent 30rem),
-        var(--bg);
-      color: var(--ink);
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .site-shell {
-      width: min(1500px, calc(100% - 32px));
-      margin: 0 auto;
-    }
-
-    .wide-section {
-      width: min(1600px, calc(100% - 16px));
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(14px);
-      background: rgba(247, 243, 238, 0.88);
-      border-bottom: 1px solid rgba(227, 216, 204, 0.8);
-    }
-
-    .topbar-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      padding: 16px 0;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), #f7b267);
-      box-shadow: 0 8px 18px rgba(201, 75, 44, 0.25);
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .nav a {
-      color: var(--muted);
-      font-size: 0.94rem;
-      font-weight: 700;
-      padding: 9px 12px;
-      border-radius: 999px;
-    }
-
-    .nav a:hover {
-      background: var(--accent-soft);
-      color: var(--accent-dark);
-    }
-
-    .hero {
-      padding: 76px 0 42px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--accent-dark);
-      background: var(--accent-soft);
-      border: 1px solid #ffd5c2;
-      border-radius: 999px;
-      padding: 8px 13px;
-      font-size: 0.9rem;
-      font-weight: 800;
-      margin-bottom: 20px;
-    }
-
-    .hero h1 {
-      margin: 0;
-      max-width: 1050px;
-      font-size: clamp(2.35rem, 6vw, 5.25rem);
-      line-height: 0.98;
-      letter-spacing: -0.065em;
-    }
-
-    .hero-copy {
-      max-width: 920px;
-      color: var(--muted);
-      font-size: 1.17rem;
-      line-height: 1.65;
-      margin: 24px 0 0;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 30px;
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 46px;
-      border-radius: 999px;
-      padding: 0 18px;
-      font-weight: 800;
-      border: 1px solid transparent;
-    }
-
-    .button-primary {
-      background: var(--ink);
-      color: #fff;
-    }
-
-    .button-secondary {
-      background: #fff;
-      color: var(--ink);
-      border-color: var(--border);
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-top: 42px;
-    }
-
-    .metric-card {
-      background: rgba(255, 255, 255, 0.78);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 10px 28px rgba(31, 41, 51, 0.06);
-    }
-
-    .metric-label {
-      color: var(--muted);
-      font-size: 0.84rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-
-    .metric-value {
-      font-size: 1.55rem;
-      font-weight: 900;
-      letter-spacing: -0.04em;
-    }
-
-    .section {
-      margin: 34px auto;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .section-header {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: start;
-      gap: 24px;
-      padding: 30px 34px 24px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(135deg, rgba(255, 240, 232, 0.72), rgba(255, 255, 255, 0.95));
-    }
-
-    .section-kicker {
-      color: var(--accent-dark);
-      font-size: 0.84rem;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 8px;
-    }
-
-    .section h2 {
-      margin: 0;
-      font-size: clamp(1.7rem, 3vw, 2.35rem);
-      line-height: 1.1;
-      letter-spacing: -0.045em;
-    }
-
-    .section-description {
-      color: var(--muted);
-      line-height: 1.55;
-      margin: 12px 0 0;
-      max-width: 820px;
-    }
-
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 8px;
-      min-width: 260px;
-    }
-
-    .tag {
-      background: #fff;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      border-radius: 999px;
-      padding: 8px 11px;
-      font-size: 0.84rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .chart-frame {
-      padding: 8px;
-      background: #fff;
-    }
-
-    .chart-frame iframe {
-      display: block;
-      width: 100%;
-      height: 760px;
-      border: 0;
-      border-radius: 16px;
-      background: #fff;
-    }
-
-    .placeholder {
-      border: 2px dashed #d8c8b7;
-      border-radius: 18px;
-      padding: 42px 28px;
-      background: linear-gradient(135deg, #fffdf8, #fff7ef);
-      color: var(--muted);
-    }
-
-    .placeholder h3 {
-      margin: 0 0 10px;
-      color: var(--ink);
-      font-size: 1.3rem;
-      letter-spacing: -0.03em;
-    }
-
-    .placeholder code {
-      background: #fff;
-      border: 1px solid var(--border);
-      padding: 3px 6px;
-      border-radius: 7px;
-      color: var(--accent-dark);
-      font-weight: 800;
-    }
-
-    .notes {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin: 34px auto 70px;
-    }
-
-    .note-card {
-      background: rgba(255, 255, 255, 0.82);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 22px;
-    }
-
-    .note-card h3 {
-      margin: 0 0 10px;
-      font-size: 1.15rem;
-      letter-spacing: -0.025em;
-    }
-
-    .note-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.55;
-    }
-
-    .footer {
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-      padding: 28px 0 44px;
-      font-size: 0.95rem;
-    }
-
-    @media (max-width: 900px) {
-      .site-shell,
-      .wide-section {
-        width: min(100% - 18px, 1600px);
+  },
+  "data": {
+    "name": "data-6d91176b4b5fb07d07a35548b0126f4a"
+  },
+  "datasets": {
+    "data-6d91176b4b5fb07d07a35548b0126f4a": [
+      {
+        "family": "All",
+        "median": 25.0,
+        "n": 173,
+        "player_age": 18
+      },
+      {
+        "family": "All",
+        "median": 25.0,
+        "n": 417,
+        "player_age": 19
+      },
+      {
+        "family": "All",
+        "median": 20.0,
+        "n": 661,
+        "player_age": 20
+      },
+      {
+        "family": "All",
+        "median": 21.0,
+        "n": 817,
+        "player_age": 21
+      },
+      {
+        "family": "All",
+        "median": 19.0,
+        "n": 996,
+        "player_age": 22
+      },
+      {
+        "family": "All",
+        "median": 18.0,
+        "n": 1095,
+        "player_age": 23
+      },
+      {
+        "family": "All",
+        "median": 18.0,
+        "n": 1184,
+        "player_age": 24
+      },
+      {
+        "family": "All",
+        "median": 18.0,
+        "n": 1346,
+        "player_age": 25
+      },
+      {
+        "family": "All",
+        "median": 18.0,
+        "n": 1289,
+        "player_age": 26
+      },
+      {
+        "family": "All",
+        "median": 19.0,
+        "n": 1263,
+        "player_age": 27
+      },
+      {
+        "family": "All",
+        "median": 17.0,
+        "n": 1229,
+        "player_age": 28
+      },
+      {
+        "family": "All",
+        "median": 16.0,
+        "n": 1078,
+        "player_age": 29
+      },
+      {
+        "family": "All",
+        "median": 18.0,
+        "n": 996,
+        "player_age": 30
+      },
+      {
+        "family": "All",
+        "median": 19.0,
+        "n": 807,
+        "player_age": 31
+      },
+      {
+        "family": "All",
+        "median": 18.0,
+        "n": 664,
+        "player_age": 32
+      },
+      {
+        "family": "All",
+        "median": 19.0,
+        "n": 504,
+        "player_age": 33
+      },
+      {
+        "family": "All",
+        "median": 15.0,
+        "n": 350,
+        "player_age": 34
+      },
+      {
+        "family": "All",
+        "median": 14.0,
+        "n": 310,
+        "player_age": 35
+      },
+      {
+        "family": "All",
+        "median": 16.0,
+        "n": 184,
+        "player_age": 36
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 30.0,
+        "n": 24,
+        "player_age": 18
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 33.0,
+        "n": 63,
+        "player_age": 19
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 30.0,
+        "n": 67,
+        "player_age": 20
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 30.0,
+        "n": 113,
+        "player_age": 21
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 20.0,
+        "n": 121,
+        "player_age": 22
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 26.0,
+        "n": 133,
+        "player_age": 23
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 21.0,
+        "n": 159,
+        "player_age": 24
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 20.0,
+        "n": 132,
+        "player_age": 25
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 22.5,
+        "n": 106,
+        "player_age": 26
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 30.0,
+        "n": 137,
+        "player_age": 27
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 21.0,
+        "n": 117,
+        "player_age": 28
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 26.0,
+        "n": 87,
+        "player_age": 29
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 23.5,
+        "n": 94,
+        "player_age": 30
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 22.0,
+        "n": 71,
+        "player_age": 31
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 16.5,
+        "n": 60,
+        "player_age": 32
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 33.0,
+        "n": 27,
+        "player_age": 33
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 19.5,
+        "n": 32,
+        "player_age": 34
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 12.5,
+        "n": 28,
+        "player_age": 35
+      },
+      {
+        "family": "Ankle / foot",
+        "median": 25.0,
+        "n": 19,
+        "player_age": 36
+      },
+      {
+        "family": "Back / hip",
+        "median": 33.0,
+        "n": 7,
+        "player_age": 18
+      },
+      {
+        "family": "Back / hip",
+        "median": 29.0,
+        "n": 9,
+        "player_age": 19
+      },
+      {
+        "family": "Back / hip",
+        "median": 28.5,
+        "n": 16,
+        "player_age": 20
+      },
+      {
+        "family": "Back / hip",
+        "median": 27.5,
+        "n": 18,
+        "player_age": 21
+      },
+      {
+        "family": "Back / hip",
+        "median": 20.5,
+        "n": 30,
+        "player_age": 22
+      },
+      {
+        "family": "Back / hip",
+        "median": 12.0,
+        "n": 31,
+        "player_age": 23
+      },
+      {
+        "family": "Back / hip",
+        "median": 14.5,
+        "n": 26,
+        "player_age": 24
+      },
+      {
+        "family": "Back / hip",
+        "median": 22.0,
+        "n": 36,
+        "player_age": 25
+      },
+      {
+        "family": "Back / hip",
+        "median": 13.0,
+        "n": 25,
+        "player_age": 26
+      },
+      {
+        "family": "Back / hip",
+        "median": 15.0,
+        "n": 35,
+        "player_age": 27
+      },
+      {
+        "family": "Back / hip",
+        "median": 15.0,
+        "n": 30,
+        "player_age": 28
+      },
+      {
+        "family": "Back / hip",
+        "median": 12.0,
+        "n": 43,
+        "player_age": 29
+      },
+      {
+        "family": "Back / hip",
+        "median": 12.0,
+        "n": 31,
+        "player_age": 30
+      },
+      {
+        "family": "Back / hip",
+        "median": 22.0,
+        "n": 17,
+        "player_age": 31
+      },
+      {
+        "family": "Back / hip",
+        "median": 21.0,
+        "n": 30,
+        "player_age": 32
+      },
+      {
+        "family": "Back / hip",
+        "median": 16.5,
+        "n": 22,
+        "player_age": 33
+      },
+      {
+        "family": "Back / hip",
+        "median": 10.0,
+        "n": 9,
+        "player_age": 34
+      },
+      {
+        "family": "Back / hip",
+        "median": 8.0,
+        "n": 8,
+        "player_age": 35
+      },
+      {
+        "family": "Back / hip",
+        "median": 10.0,
+        "n": 7,
+        "player_age": 36
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 12.0,
+        "n": 35,
+        "player_age": 18
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 14.0,
+        "n": 83,
+        "player_age": 19
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 9.5,
+        "n": 114,
+        "player_age": 20
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 9.0,
+        "n": 145,
+        "player_age": 21
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 9.0,
+        "n": 160,
+        "player_age": 22
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 9.0,
+        "n": 180,
+        "player_age": 23
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 11.0,
+        "n": 189,
+        "player_age": 24
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 10.0,
+        "n": 230,
+        "player_age": 25
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 11.0,
+        "n": 197,
+        "player_age": 26
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 9.0,
+        "n": 194,
+        "player_age": 27
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 8.0,
+        "n": 171,
+        "player_age": 28
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 9.5,
+        "n": 178,
+        "player_age": 29
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 8.0,
+        "n": 163,
+        "player_age": 30
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 10.0,
+        "n": 124,
+        "player_age": 31
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 11.0,
+        "n": 89,
+        "player_age": 32
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 9.0,
+        "n": 90,
+        "player_age": 33
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 8.0,
+        "n": 43,
+        "player_age": 34
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 9.0,
+        "n": 59,
+        "player_age": 35
+      },
+      {
+        "family": "Illness / fitness",
+        "median": 10.0,
+        "n": 17,
+        "player_age": 36
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 101.5,
+        "n": 30,
+        "player_age": 18
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 63.0,
+        "n": 59,
+        "player_age": 19
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 48.0,
+        "n": 85,
+        "player_age": 20
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 40.0,
+        "n": 114,
+        "player_age": 21
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 36.0,
+        "n": 134,
+        "player_age": 22
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 50.0,
+        "n": 133,
+        "player_age": 23
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 41.0,
+        "n": 160,
+        "player_age": 24
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 41.0,
+        "n": 164,
+        "player_age": 25
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 53.5,
+        "n": 164,
+        "player_age": 26
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 49.0,
+        "n": 155,
+        "player_age": 27
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 50.0,
+        "n": 136,
+        "player_age": 28
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 32.0,
+        "n": 101,
+        "player_age": 29
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 42.5,
+        "n": 98,
+        "player_age": 30
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 35.0,
+        "n": 78,
+        "player_age": 31
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 48.0,
+        "n": 72,
+        "player_age": 32
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 46.0,
+        "n": 54,
+        "player_age": 33
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 26.0,
+        "n": 37,
+        "player_age": 34
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 44.5,
+        "n": 24,
+        "player_age": 35
+      },
+      {
+        "family": "Knee / ligament",
+        "median": 39.0,
+        "n": 14,
+        "player_age": 36
+      },
+      {
+        "family": "Knock / impact",
+        "median": 15.0,
+        "n": 9,
+        "player_age": 18
+      },
+      {
+        "family": "Knock / impact",
+        "median": 12.0,
+        "n": 17,
+        "player_age": 19
+      },
+      {
+        "family": "Knock / impact",
+        "median": 14.5,
+        "n": 30,
+        "player_age": 20
+      },
+      {
+        "family": "Knock / impact",
+        "median": 9.0,
+        "n": 28,
+        "player_age": 21
+      },
+      {
+        "family": "Knock / impact",
+        "median": 12.0,
+        "n": 47,
+        "player_age": 22
+      },
+      {
+        "family": "Knock / impact",
+        "median": 13.0,
+        "n": 50,
+        "player_age": 23
+      },
+      {
+        "family": "Knock / impact",
+        "median": 9.5,
+        "n": 60,
+        "player_age": 24
+      },
+      {
+        "family": "Knock / impact",
+        "median": 13.5,
+        "n": 68,
+        "player_age": 25
+      },
+      {
+        "family": "Knock / impact",
+        "median": 9.5,
+        "n": 62,
+        "player_age": 26
+      },
+      {
+        "family": "Knock / impact",
+        "median": 10.0,
+        "n": 59,
+        "player_age": 27
+      },
+      {
+        "family": "Knock / impact",
+        "median": 11.0,
+        "n": 62,
+        "player_age": 28
+      },
+      {
+        "family": "Knock / impact",
+        "median": 8.0,
+        "n": 45,
+        "player_age": 29
+      },
+      {
+        "family": "Knock / impact",
+        "median": 12.0,
+        "n": 35,
+        "player_age": 30
+      },
+      {
+        "family": "Knock / impact",
+        "median": 12.0,
+        "n": 39,
+        "player_age": 31
+      },
+      {
+        "family": "Knock / impact",
+        "median": 8.0,
+        "n": 22,
+        "player_age": 32
+      },
+      {
+        "family": "Knock / impact",
+        "median": 9.5,
+        "n": 18,
+        "player_age": 33
+      },
+      {
+        "family": "Knock / impact",
+        "median": 12.0,
+        "n": 19,
+        "player_age": 34
+      },
+      {
+        "family": "Knock / impact",
+        "median": 11.0,
+        "n": 13,
+        "player_age": 35
+      },
+      {
+        "family": "Knock / impact",
+        "median": 11.0,
+        "n": 8,
+        "player_age": 36
+      },
+      {
+        "family": "Muscular",
+        "median": 21.5,
+        "n": 32,
+        "player_age": 18
+      },
+      {
+        "family": "Muscular",
+        "median": 28.0,
+        "n": 121,
+        "player_age": 19
+      },
+      {
+        "family": "Muscular",
+        "median": 24.0,
+        "n": 233,
+        "player_age": 20
+      },
+      {
+        "family": "Muscular",
+        "median": 24.0,
+        "n": 265,
+        "player_age": 21
+      },
+      {
+        "family": "Muscular",
+        "median": 24.0,
+        "n": 362,
+        "player_age": 22
+      },
+      {
+        "family": "Muscular",
+        "median": 19.0,
+        "n": 392,
+        "player_age": 23
+      },
+      {
+        "family": "Muscular",
+        "median": 21.0,
+        "n": 421,
+        "player_age": 24
+      },
+      {
+        "family": "Muscular",
+        "median": 21.0,
+        "n": 501,
+        "player_age": 25
+      },
+      {
+        "family": "Muscular",
+        "median": 21.0,
+        "n": 531,
+        "player_age": 26
+      },
+      {
+        "family": "Muscular",
+        "median": 22.0,
+        "n": 519,
+        "player_age": 27
+      },
+      {
+        "family": "Muscular",
+        "median": 22.0,
+        "n": 522,
+        "player_age": 28
+      },
+      {
+        "family": "Muscular",
+        "median": 20.0,
+        "n": 484,
+        "player_age": 29
+      },
+      {
+        "family": "Muscular",
+        "median": 22.0,
+        "n": 432,
+        "player_age": 30
+      },
+      {
+        "family": "Muscular",
+        "median": 22.0,
+        "n": 347,
+        "player_age": 31
+      },
+      {
+        "family": "Muscular",
+        "median": 20.0,
+        "n": 293,
+        "player_age": 32
+      },
+      {
+        "family": "Muscular",
+        "median": 24.0,
+        "n": 226,
+        "player_age": 33
+      },
+      {
+        "family": "Muscular",
+        "median": 20.0,
+        "n": 151,
+        "player_age": 34
+      },
+      {
+        "family": "Muscular",
+        "median": 18.0,
+        "n": 128,
+        "player_age": 35
+      },
+      {
+        "family": "Muscular",
+        "median": 18.0,
+        "n": 89,
+        "player_age": 36
+      },
+      {
+        "family": "Other",
+        "median": 28.5,
+        "n": 28,
+        "player_age": 18
+      },
+      {
+        "family": "Other",
+        "median": 35.0,
+        "n": 51,
+        "player_age": 19
+      },
+      {
+        "family": "Other",
+        "median": 12.0,
+        "n": 96,
+        "player_age": 20
+      },
+      {
+        "family": "Other",
+        "median": 20.5,
+        "n": 104,
+        "player_age": 21
+      },
+      {
+        "family": "Other",
+        "median": 17.0,
+        "n": 121,
+        "player_age": 22
+      },
+      {
+        "family": "Other",
+        "median": 15.0,
+        "n": 149,
+        "player_age": 23
+      },
+      {
+        "family": "Other",
+        "median": 15.0,
+        "n": 127,
+        "player_age": 24
+      },
+      {
+        "family": "Other",
+        "median": 15.0,
+        "n": 176,
+        "player_age": 25
+      },
+      {
+        "family": "Other",
+        "median": 12.5,
+        "n": 174,
+        "player_age": 26
+      },
+      {
+        "family": "Other",
+        "median": 15.0,
+        "n": 148,
+        "player_age": 27
+      },
+      {
+        "family": "Other",
+        "median": 12.0,
+        "n": 168,
+        "player_age": 28
+      },
+      {
+        "family": "Other",
+        "median": 12.0,
+        "n": 111,
+        "player_age": 29
+      },
+      {
+        "family": "Other",
+        "median": 15.0,
+        "n": 116,
+        "player_age": 30
+      },
+      {
+        "family": "Other",
+        "median": 17.0,
+        "n": 117,
+        "player_age": 31
+      },
+      {
+        "family": "Other",
+        "median": 17.0,
+        "n": 82,
+        "player_age": 32
+      },
+      {
+        "family": "Other",
+        "median": 12.0,
+        "n": 61,
+        "player_age": 33
+      },
+      {
+        "family": "Other",
+        "median": 12.0,
+        "n": 51,
+        "player_age": 34
+      },
+      {
+        "family": "Other",
+        "median": 10.0,
+        "n": 43,
+        "player_age": 35
+      },
+      {
+        "family": "Other",
+        "median": 13.0,
+        "n": 25,
+        "player_age": 36
+      },
+      {
+        "family": "Upper body",
+        "median": 29.5,
+        "n": 8,
+        "player_age": 18
+      },
+      {
+        "family": "Upper body",
+        "median": 72.5,
+        "n": 14,
+        "player_age": 19
+      },
+      {
+        "family": "Upper body",
+        "median": 47.5,
+        "n": 20,
+        "player_age": 20
+      },
+      {
+        "family": "Upper body",
+        "median": 40.5,
+        "n": 30,
+        "player_age": 21
+      },
+      {
+        "family": "Upper body",
+        "median": 32.0,
+        "n": 21,
+        "player_age": 22
+      },
+      {
+        "family": "Upper body",
+        "median": 40.0,
+        "n": 27,
+        "player_age": 23
+      },
+      {
+        "family": "Upper body",
+        "median": 24.0,
+        "n": 42,
+        "player_age": 24
+      },
+      {
+        "family": "Upper body",
+        "median": 20.0,
+        "n": 39,
+        "player_age": 25
+      },
+      {
+        "family": "Upper body",
+        "median": 48.5,
+        "n": 30,
+        "player_age": 26
+      },
+      {
+        "family": "Upper body",
+        "median": 35.0,
+        "n": 16,
+        "player_age": 27
+      },
+      {
+        "family": "Upper body",
+        "median": 18.0,
+        "n": 23,
+        "player_age": 28
+      },
+      {
+        "family": "Upper body",
+        "median": 23.0,
+        "n": 29,
+        "player_age": 29
+      },
+      {
+        "family": "Upper body",
+        "median": 32.0,
+        "n": 27,
+        "player_age": 30
+      },
+      {
+        "family": "Upper body",
+        "median": 46.5,
+        "n": 14,
+        "player_age": 31
+      },
+      {
+        "family": "Upper body",
+        "median": 42.5,
+        "n": 16,
+        "player_age": 32
+      },
+      {
+        "family": "Upper body",
+        "median": 58.5,
+        "n": 6,
+        "player_age": 33
+      },
+      {
+        "family": "Upper body",
+        "median": 11.5,
+        "n": 8,
+        "player_age": 34
+      },
+      {
+        "family": "Upper body",
+        "median": 42.0,
+        "n": 7,
+        "player_age": 35
+      },
+      {
+        "family": "Upper body",
+        "median": 12.0,
+        "n": 5,
+        "player_age": 36
       }
-
-      .topbar-inner {
-        flex-direction: column;
-        align-items: flex-start;
+    ],
+    "data-daf6c2343bda60c0489e7f20053ab16e": [
+      {
+        "family": "All",
+        "label": "trend: r = -0.78  ·  ≈ 0.4 fewer days per year of age"
+      },
+      {
+        "family": "Ankle / foot",
+        "label": "trend: r = -0.49  ·  ≈ 0.5 fewer days per year of age"
+      },
+      {
+        "family": "Back / hip",
+        "label": "trend: r = -0.74  ·  ≈ 1.0 fewer days per year of age"
+      },
+      {
+        "family": "Illness / fitness",
+        "label": "trend: r = -0.44  ·  ≈ 0.1 fewer days per year of age"
+      },
+      {
+        "family": "Knee / ligament",
+        "label": "trend: r = -0.53  ·  ≈ 1.5 fewer days per year of age"
+      },
+      {
+        "family": "Knock / impact",
+        "label": "trend: r = -0.42  ·  ≈ 0.1 fewer days per year of age"
+      },
+      {
+        "family": "Muscular",
+        "label": "trend: r = -0.59  ·  ≈ 0.3 fewer days per year of age"
+      },
+      {
+        "family": "Other",
+        "label": "trend: r = -0.62  ·  ≈ 0.7 fewer days per year of age"
+      },
+      {
+        "family": "Upper body",
+        "label": "trend: r = -0.29  ·  ≈ 0.8 fewer days per year of age"
       }
-
-      .nav {
-        justify-content: flex-start;
+    ]
+  },
+  "height": 220,
+  "layer": [
+    {
+      "encoding": {
+        "x": {
+          "axis": {
+            "labelAngle": 0
+          },
+          "field": "player_age",
+          "scale": {
+            "zero": false
+          },
+          "title": "Player age",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "median",
+          "scale": {
+            "zero": false
+          },
+          "title": "Median days out",
+          "type": "quantitative"
+        }
+      },
+      "mark": {
+        "color": "#b2182b",
+        "type": "line"
+      },
+      "name": "view_9395454c9ea1e4d1_0",
+      "transform": [
+        {
+          "filter": {
+            "param": "param_8879beada970fbd5"
+          }
+        }
+      ]
+    },
+    {
+      "encoding": {
+        "size": {
+          "field": "n",
+          "scale": {
+            "range": [
+              20,
+              400
+            ]
+          },
+          "title": "Injury spells (n)",
+          "type": "quantitative"
+        },
+        "tooltip": [
+          {
+            "field": "player_age",
+            "title": "Age",
+            "type": "quantitative"
+          },
+          {
+            "field": "median",
+            "title": "Median days out",
+            "type": "quantitative"
+          },
+          {
+            "field": "n",
+            "title": "Injury spells (n)",
+            "type": "quantitative"
+          },
+          {
+            "field": "family",
+            "title": "Family",
+            "type": "nominal"
+          }
+        ],
+        "x": {
+          "axis": {
+            "labelAngle": 0
+          },
+          "field": "player_age",
+          "scale": {
+            "zero": false
+          },
+          "title": "Player age",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "median",
+          "scale": {
+            "zero": false
+          },
+          "title": "Median days out",
+          "type": "quantitative"
+        }
+      },
+      "mark": {
+        "color": "#b2182b",
+        "opacity": 0.9,
+        "type": "circle"
+      },
+      "transform": [
+        {
+          "filter": {
+            "param": "param_8879beada970fbd5"
+          }
+        }
+      ]
+    },
+    {
+      "encoding": {
+        "tooltip": [
+          {
+            "field": "player_age",
+            "title": "Age",
+            "type": "quantitative"
+          },
+          {
+            "field": "median",
+            "format": ".1f",
+            "title": "Trend (fitted days)",
+            "type": "quantitative"
+          }
+        ],
+        "x": {
+          "axis": {
+            "labelAngle": 0
+          },
+          "field": "player_age",
+          "scale": {
+            "zero": false
+          },
+          "title": "Player age",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "median",
+          "scale": {
+            "zero": false
+          },
+          "title": "Median days out",
+          "type": "quantitative"
+        }
+      },
+      "mark": {
+        "color": "#6b7280",
+        "strokeDash": [
+          6,
+          4
+        ],
+        "strokeWidth": 2,
+        "type": "line"
+      },
+      "transform": [
+        {
+          "filter": {
+            "param": "param_8879beada970fbd5"
+          }
+        },
+        {
+          "on": "player_age",
+          "regression": "median"
+        }
+      ]
+    },
+    {
+      "data": {
+        "name": "data-daf6c2343bda60c0489e7f20053ab16e"
+      },
+      "encoding": {
+        "text": {
+          "field": "label",
+          "type": "nominal"
+        },
+        "x": {
+          "value": 598
+        },
+        "y": {
+          "value": 12
+        }
+      },
+      "mark": {
+        "align": "right",
+        "color": "#6b7280",
+        "fontSize": 12.5,
+        "fontStyle": "italic",
+        "type": "text"
+      },
+      "transform": [
+        {
+          "filter": {
+            "param": "param_8879beada970fbd5"
+          }
+        }
+      ]
+    }
+  ],
+  "params": [
+    {
+      "bind": {
+        "input": "select",
+        "name": "Injury family:  ",
+        "options": [
+          "All",
+          "Ankle / foot",
+          "Back / hip",
+          "Illness / fitness",
+          "Knee / ligament",
+          "Knock / impact",
+          "Muscular",
+          "Other",
+          "Upper body"
+        ]
+      },
+      "name": "param_8879beada970fbd5",
+      "select": {
+        "fields": [
+          "family"
+        ],
+        "type": "point"
+      },
+      "value": [
+        {
+          "family": "All"
+        }
+      ],
+      "views": [
+        "view_9395454c9ea1e4d1_0"
+      ]
+    }
+  ],
+  "title": {
+    "subtitle": "Red = median days out per age (n = number of injury spells; larger point = more spells) · dashed = linear trend the correlation measures",
+    "text": "View 1 — Recovery time FALLS as players age: hypothesis reversed"
+  },
+  "width": 600
+}, {actions:false});
+vegaEmbed('#viewB', {
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json",
+  "config": {
+    "axis": {
+      "labelFontSize": 12,
+      "titleFontSize": 13
+    },
+    "title": {
+      "anchor": "start",
+      "fontSize": 15
+    },
+    "view": {
+      "continuousHeight": 300,
+      "continuousWidth": 300,
+      "stroke": null
+    }
+  },
+  "datasets": {
+    "data-2d850131d6983196ee25ff9f472b71f2": [
+      {
+        "family": "Ankle / foot",
+        "grouping": "Injury family",
+        "old": 18.0,
+        "young": 30.0
+      },
+      {
+        "family": "Back / hip",
+        "grouping": "Injury family",
+        "old": 9.0,
+        "young": 29.0
+      },
+      {
+        "family": "Illness / fitness",
+        "grouping": "Injury family",
+        "old": 9.0,
+        "young": 11.0
+      },
+      {
+        "family": "Knee / ligament",
+        "grouping": "Injury family",
+        "old": 33.0,
+        "young": 55.0
+      },
+      {
+        "family": "Knock / impact",
+        "grouping": "Injury family",
+        "old": 9.0,
+        "young": 12.0
+      },
+      {
+        "family": "Muscular",
+        "grouping": "Injury family",
+        "old": 19.5,
+        "young": 24.0
+      },
+      {
+        "family": "Other",
+        "grouping": "Injury family",
+        "old": 12.0,
+        "young": 18.0
+      },
+      {
+        "family": "Upper body",
+        "grouping": "Injury family",
+        "old": 19.0,
+        "young": 43.5
+      },
+      {
+        "family": "Bundesliga",
+        "grouping": "League",
+        "old": 11.0,
+        "young": 18.0
+      },
+      {
+        "family": "La Liga",
+        "grouping": "League",
+        "old": 16.5,
+        "young": 21.0
+      },
+      {
+        "family": "Ligue 1",
+        "grouping": "League",
+        "old": 16.0,
+        "young": 21.5
+      },
+      {
+        "family": "Premier League",
+        "grouping": "League",
+        "old": 24.5,
+        "young": 31.0
+      },
+      {
+        "family": "Serie A",
+        "grouping": "League",
+        "old": 15.0,
+        "young": 21.0
+      },
+      {
+        "family": "Defender",
+        "grouping": "Position",
+        "old": 17.0,
+        "young": 22.0
+      },
+      {
+        "family": "Forward",
+        "grouping": "Position",
+        "old": 14.0,
+        "young": 19.5
+      },
+      {
+        "family": "Goalkeeper",
+        "grouping": "Position",
+        "old": 15.0,
+        "young": 29.5
+      },
+      {
+        "family": "Midfielder",
+        "grouping": "Position",
+        "old": 15.0,
+        "young": 22.0
       }
-
-      .summary-grid,
-      .notes {
-        grid-template-columns: repeat(2, 1fr);
+    ],
+    "data-71f89d11a3ca348cde4e4f0ef1eb2504": [
+      {
+        "age_band": "16-21",
+        "family": "Ankle / foot",
+        "hi": 136.0,
+        "iqr_str": "13-56 days",
+        "lo": 6.0,
+        "median": 30.0,
+        "n": 270,
+        "q1": 13.25,
+        "q3": 56.0,
+        "range_str": "6-136 days"
+      },
+      {
+        "age_band": "16-21",
+        "family": "Back / hip",
+        "hi": 166.0,
+        "iqr_str": "11-60 days",
+        "lo": 4.0,
+        "median": 29.0,
+        "n": 51,
+        "q1": 11.0,
+        "q3": 60.5,
+        "range_str": "4-166 days"
+      },
+      {
+        "age_band": "16-21",
+        "family": "Illness / fitness",
+        "hi": 39.94999999999999,
+        "iqr_str": "6-18 days",
+        "lo": 3.0,
+        "median": 11.0,
+        "n": 382,
+        "q1": 6.0,
+        "q3": 18.0,
+        "range_str": "3-40 days"
+      },
+      {
+        "age_band": "16-21",
+        "family": "Knee / ligament",
+        "hi": 282.69999999999976,
+        "iqr_str": "20-154 days",
+        "lo": 7.0,
+        "median": 55.0,
+        "n": 299,
+        "q1": 20.0,
+        "q3": 153.5,
+        "range_str": "7-283 days"
+      },
+      {
+        "age_band": "16-21",
+        "family": "Knock / impact",
+        "hi": 56.0,
+        "iqr_str": "7-23 days",
+        "lo": 4.0,
+        "median": 12.0,
+        "n": 86,
+        "q1": 7.0,
+        "q3": 23.0,
+        "range_str": "4-56 days"
+      },
+      {
+        "age_band": "16-21",
+        "family": "Muscular",
+        "hi": 130.4999999999999,
+        "iqr_str": "13-48 days",
+        "lo": 6.0,
+        "median": 24.0,
+        "n": 663,
+        "q1": 13.0,
+        "q3": 48.5,
+        "range_str": "6-130 days"
+      },
+      {
+        "age_band": "16-21",
+        "family": "Other",
+        "hi": 136.39999999999986,
+        "iqr_str": "8-53 days",
+        "lo": 3.0,
+        "median": 18.0,
+        "n": 284,
+        "q1": 8.0,
+        "q3": 53.0,
+        "range_str": "3-136 days"
+      },
+      {
+        "age_band": "16-21",
+        "family": "Upper body",
+        "hi": 136.6499999999999,
+        "iqr_str": "17-86 days",
+        "lo": 6.65,
+        "median": 43.5,
+        "n": 74,
+        "q1": 17.25,
+        "q3": 85.75,
+        "range_str": "7-137 days"
+      },
+      {
+        "age_band": "22-25",
+        "family": "Ankle / foot",
+        "hi": 142.5999999999999,
+        "iqr_str": "12-49 days",
+        "lo": 5.200000000000003,
+        "median": 22.0,
+        "n": 545,
+        "q1": 12.0,
+        "q3": 49.0,
+        "range_str": "5-143 days"
+      },
+      {
+        "age_band": "22-25",
+        "family": "Back / hip",
+        "hi": 101.69999999999997,
+        "iqr_str": "8-31 days",
+        "lo": 5.0,
+        "median": 16.0,
+        "n": 123,
+        "q1": 8.0,
+        "q3": 31.0,
+        "range_str": "5-102 days"
+      },
+      {
+        "age_band": "22-25",
+        "family": "Illness / fitness",
+        "hi": 37.10000000000002,
+        "iqr_str": "6-15 days",
+        "lo": 3.8999999999999986,
+        "median": 10.0,
+        "n": 759,
+        "q1": 6.0,
+        "q3": 15.0,
+        "range_str": "4-37 days"
+      },
+      {
+        "age_band": "22-25",
+        "family": "Knee / ligament",
+        "hi": 299.0,
+        "iqr_str": "18-102 days",
+        "lo": 6.0,
+        "median": 43.0,
+        "n": 591,
+        "q1": 18.0,
+        "q3": 102.0,
+        "range_str": "6-299 days"
+      },
+      {
+        "age_band": "22-25",
+        "family": "Knock / impact",
+        "hi": 45.79999999999998,
+        "iqr_str": "7-21 days",
+        "lo": 4.0,
+        "median": 12.0,
+        "n": 225,
+        "q1": 7.0,
+        "q3": 21.0,
+        "range_str": "4-46 days"
+      },
+      {
+        "age_band": "22-25",
+        "family": "Muscular",
+        "hi": 88.25,
+        "iqr_str": "11-36 days",
+        "lo": 5.0,
+        "median": 21.0,
+        "n": 1676,
+        "q1": 11.0,
+        "q3": 36.0,
+        "range_str": "5-88 days"
+      },
+      {
+        "age_band": "22-25",
+        "family": "Other",
+        "hi": 108.39999999999998,
+        "iqr_str": "7-41 days",
+        "lo": 3.0,
+        "median": 15.0,
+        "n": 573,
+        "q1": 7.0,
+        "q3": 41.0,
+        "range_str": "3-108 days"
+      },
+      {
+        "age_band": "22-25",
+        "family": "Upper body",
+        "hi": 128.19999999999996,
+        "iqr_str": "11-57 days",
+        "lo": 5.0,
+        "median": 29.0,
+        "n": 129,
+        "q1": 11.0,
+        "q3": 57.0,
+        "range_str": "5-128 days"
+      },
+      {
+        "age_band": "26-29",
+        "family": "Ankle / foot",
+        "hi": 166.0,
+        "iqr_str": "10-60 days",
+        "lo": 6.0,
+        "median": 26.0,
+        "n": 447,
+        "q1": 10.0,
+        "q3": 60.5,
+        "range_str": "6-166 days"
+      },
+      {
+        "age_band": "26-29",
+        "family": "Back / hip",
+        "hi": 66.0,
+        "iqr_str": "8-24 days",
+        "lo": 4.0,
+        "median": 14.0,
+        "n": 133,
+        "q1": 8.0,
+        "q3": 24.0,
+        "range_str": "4-66 days"
+      },
+      {
+        "age_band": "26-29",
+        "family": "Illness / fitness",
+        "hi": 30.049999999999955,
+        "iqr_str": "6-15 days",
+        "lo": 3.0,
+        "median": 10.0,
+        "n": 740,
+        "q1": 6.0,
+        "q3": 15.0,
+        "range_str": "3-30 days"
+      },
+      {
+        "age_band": "26-29",
+        "family": "Knee / ligament",
+        "hi": 303.0,
+        "iqr_str": "21-116 days",
+        "lo": 6.0,
+        "median": 47.0,
+        "n": 556,
+        "q1": 21.0,
+        "q3": 116.25,
+        "range_str": "6-303 days"
+      },
+      {
+        "age_band": "26-29",
+        "family": "Knock / impact",
+        "hi": 51.299999999999955,
+        "iqr_str": "6-20 days",
+        "lo": 4.0,
+        "median": 10.0,
+        "n": 228,
+        "q1": 6.0,
+        "q3": 20.0,
+        "range_str": "4-51 days"
+      },
+      {
+        "age_band": "26-29",
+        "family": "Muscular",
+        "hi": 85.0,
+        "iqr_str": "11-36 days",
+        "lo": 5.0,
+        "median": 21.0,
+        "n": 2056,
+        "q1": 11.0,
+        "q3": 36.0,
+        "range_str": "5-85 days"
+      },
+      {
+        "age_band": "26-29",
+        "family": "Other",
+        "hi": 113.0,
+        "iqr_str": "6-32 days",
+        "lo": 3.0,
+        "median": 13.0,
+        "n": 601,
+        "q1": 6.0,
+        "q3": 32.0,
+        "range_str": "3-113 days"
+      },
+      {
+        "age_band": "26-29",
+        "family": "Upper body",
+        "hi": 115.04999999999994,
+        "iqr_str": "15-61 days",
+        "lo": 6.0,
+        "median": 29.0,
+        "n": 98,
+        "q1": 15.0,
+        "q3": 60.75,
+        "range_str": "6-115 days"
+      },
+      {
+        "age_band": "30-33",
+        "family": "Ankle / foot",
+        "hi": 132.79999999999995,
+        "iqr_str": "11-46 days",
+        "lo": 5.0,
+        "median": 22.5,
+        "n": 252,
+        "q1": 11.0,
+        "q3": 46.0,
+        "range_str": "5-133 days"
+      },
+      {
+        "age_band": "30-33",
+        "family": "Back / hip",
+        "hi": 106.59999999999997,
+        "iqr_str": "9-39 days",
+        "lo": 3.95,
+        "median": 18.5,
+        "n": 100,
+        "q1": 9.0,
+        "q3": 39.25,
+        "range_str": "4-107 days"
+      },
+      {
+        "age_band": "30-33",
+        "family": "Illness / fitness",
+        "hi": 32.0,
+        "iqr_str": "6-15 days",
+        "lo": 4.0,
+        "median": 9.0,
+        "n": 466,
+        "q1": 6.0,
+        "q3": 15.0,
+        "range_str": "4-32 days"
+      },
+      {
+        "age_band": "30-33",
+        "family": "Knee / ligament",
+        "hi": 309.84999999999997,
+        "iqr_str": "18-112 days",
+        "lo": 5.0,
+        "median": 43.0,
+        "n": 302,
+        "q1": 18.0,
+        "q3": 112.0,
+        "range_str": "5-310 days"
+      },
+      {
+        "age_band": "30-33",
+        "family": "Knock / impact",
+        "hi": 48.04999999999998,
+        "iqr_str": "6-22 days",
+        "lo": 4.0,
+        "median": 11.0,
+        "n": 114,
+        "q1": 6.0,
+        "q3": 21.5,
+        "range_str": "4-48 days"
+      },
+      {
+        "age_band": "30-33",
+        "family": "Muscular",
+        "hi": 87.14999999999986,
+        "iqr_str": "12-36 days",
+        "lo": 5.0,
+        "median": 22.0,
+        "n": 1298,
+        "q1": 12.0,
+        "q3": 36.0,
+        "range_str": "5-87 days"
+      },
+      {
+        "age_band": "30-33",
+        "family": "Other",
+        "hi": 142.0,
+        "iqr_str": "7-36 days",
+        "lo": 3.0,
+        "median": 15.5,
+        "n": 376,
+        "q1": 7.0,
+        "q3": 36.0,
+        "range_str": "3-142 days"
+      },
+      {
+        "age_band": "30-33",
+        "family": "Upper body",
+        "hi": 124.29999999999998,
+        "iqr_str": "14-72 days",
+        "lo": 3.2,
+        "median": 41.0,
+        "n": 63,
+        "q1": 13.5,
+        "q3": 71.5,
+        "range_str": "3-124 days"
+      },
+      {
+        "age_band": "34+",
+        "family": "Ankle / foot",
+        "hi": 116.19999999999999,
+        "iqr_str": "8-41 days",
+        "lo": 4.0,
+        "median": 18.0,
+        "n": 89,
+        "q1": 8.0,
+        "q3": 41.0,
+        "range_str": "4-116 days"
+      },
+      {
+        "age_band": "34+",
+        "family": "Back / hip",
+        "hi": 114.75,
+        "iqr_str": "6-19 days",
+        "lo": 3.75,
+        "median": 9.0,
+        "n": 36,
+        "q1": 6.0,
+        "q3": 19.0,
+        "range_str": "4-115 days"
+      },
+      {
+        "age_band": "34+",
+        "family": "Illness / fitness",
+        "hi": 25.75,
+        "iqr_str": "6-15 days",
+        "lo": 4.0,
+        "median": 9.0,
+        "n": 146,
+        "q1": 6.0,
+        "q3": 14.75,
+        "range_str": "4-26 days"
+      },
+      {
+        "age_band": "34+",
+        "family": "Knee / ligament",
+        "hi": 256.79999999999995,
+        "iqr_str": "14-80 days",
+        "lo": 6.0,
+        "median": 33.0,
+        "n": 99,
+        "q1": 13.5,
+        "q3": 80.0,
+        "range_str": "6-257 days"
+      },
+      {
+        "age_band": "34+",
+        "family": "Knock / impact",
+        "hi": 44.0,
+        "iqr_str": "6-18 days",
+        "lo": 4.0,
+        "median": 9.0,
+        "n": 51,
+        "q1": 6.0,
+        "q3": 18.5,
+        "range_str": "4-44 days"
+      },
+      {
+        "age_band": "34+",
+        "family": "Muscular",
+        "hi": 79.0,
+        "iqr_str": "11-33 days",
+        "lo": 5.0,
+        "median": 19.5,
+        "n": 450,
+        "q1": 11.0,
+        "q3": 33.0,
+        "range_str": "5-79 days"
+      },
+      {
+        "age_band": "34+",
+        "family": "Other",
+        "hi": 95.49999999999994,
+        "iqr_str": "5-26 days",
+        "lo": 3.0,
+        "median": 12.0,
+        "n": 147,
+        "q1": 5.0,
+        "q3": 26.0,
+        "range_str": "3-95 days"
+      },
+      {
+        "age_band": "34+",
+        "family": "Upper body",
+        "hi": 94.7999999999999,
+        "iqr_str": "11-42 days",
+        "lo": 5.6000000000000005,
+        "median": 19.0,
+        "n": 25,
+        "q1": 11.0,
+        "q3": 42.0,
+        "range_str": "6-95 days"
       }
-
-      .section-header {
-        grid-template-columns: 1fr;
+    ],
+    "data-c6e76feb1e85d1af74cddf7d0089314b": [
+      {
+        "age_band": "16-21",
+        "family": "Ankle / foot",
+        "grouping": "Injury family",
+        "median": 30.0,
+        "n": 270
+      },
+      {
+        "age_band": "34+",
+        "family": "Ankle / foot",
+        "grouping": "Injury family",
+        "median": 18.0,
+        "n": 89
+      },
+      {
+        "age_band": "16-21",
+        "family": "Back / hip",
+        "grouping": "Injury family",
+        "median": 29.0,
+        "n": 51
+      },
+      {
+        "age_band": "34+",
+        "family": "Back / hip",
+        "grouping": "Injury family",
+        "median": 9.0,
+        "n": 36
+      },
+      {
+        "age_band": "16-21",
+        "family": "Illness / fitness",
+        "grouping": "Injury family",
+        "median": 11.0,
+        "n": 382
+      },
+      {
+        "age_band": "34+",
+        "family": "Illness / fitness",
+        "grouping": "Injury family",
+        "median": 9.0,
+        "n": 146
+      },
+      {
+        "age_band": "16-21",
+        "family": "Knee / ligament",
+        "grouping": "Injury family",
+        "median": 55.0,
+        "n": 299
+      },
+      {
+        "age_band": "34+",
+        "family": "Knee / ligament",
+        "grouping": "Injury family",
+        "median": 33.0,
+        "n": 99
+      },
+      {
+        "age_band": "16-21",
+        "family": "Knock / impact",
+        "grouping": "Injury family",
+        "median": 12.0,
+        "n": 86
+      },
+      {
+        "age_band": "34+",
+        "family": "Knock / impact",
+        "grouping": "Injury family",
+        "median": 9.0,
+        "n": 51
+      },
+      {
+        "age_band": "16-21",
+        "family": "Muscular",
+        "grouping": "Injury family",
+        "median": 24.0,
+        "n": 663
+      },
+      {
+        "age_band": "34+",
+        "family": "Muscular",
+        "grouping": "Injury family",
+        "median": 19.5,
+        "n": 450
+      },
+      {
+        "age_band": "16-21",
+        "family": "Other",
+        "grouping": "Injury family",
+        "median": 18.0,
+        "n": 284
+      },
+      {
+        "age_band": "34+",
+        "family": "Other",
+        "grouping": "Injury family",
+        "median": 12.0,
+        "n": 147
+      },
+      {
+        "age_band": "16-21",
+        "family": "Upper body",
+        "grouping": "Injury family",
+        "median": 43.5,
+        "n": 74
+      },
+      {
+        "age_band": "34+",
+        "family": "Upper body",
+        "grouping": "Injury family",
+        "median": 19.0,
+        "n": 25
+      },
+      {
+        "age_band": "16-21",
+        "family": "Bundesliga",
+        "grouping": "League",
+        "median": 18.0,
+        "n": 726
+      },
+      {
+        "age_band": "34+",
+        "family": "Bundesliga",
+        "grouping": "League",
+        "median": 11.0,
+        "n": 184
+      },
+      {
+        "age_band": "16-21",
+        "family": "La Liga",
+        "grouping": "League",
+        "median": 21.0,
+        "n": 258
+      },
+      {
+        "age_band": "34+",
+        "family": "La Liga",
+        "grouping": "League",
+        "median": 16.5,
+        "n": 180
+      },
+      {
+        "age_band": "16-21",
+        "family": "Ligue 1",
+        "grouping": "League",
+        "median": 21.5,
+        "n": 368
+      },
+      {
+        "age_band": "34+",
+        "family": "Ligue 1",
+        "grouping": "League",
+        "median": 16.0,
+        "n": 141
+      },
+      {
+        "age_band": "16-21",
+        "family": "Premier League",
+        "grouping": "League",
+        "median": 31.0,
+        "n": 327
+      },
+      {
+        "age_band": "34+",
+        "family": "Premier League",
+        "grouping": "League",
+        "median": 24.5,
+        "n": 144
+      },
+      {
+        "age_band": "16-21",
+        "family": "Serie A",
+        "grouping": "League",
+        "median": 21.0,
+        "n": 430
+      },
+      {
+        "age_band": "34+",
+        "family": "Serie A",
+        "grouping": "League",
+        "median": 15.0,
+        "n": 394
+      },
+      {
+        "age_band": "16-21",
+        "family": "Defender",
+        "grouping": "Position",
+        "median": 22.0,
+        "n": 642
+      },
+      {
+        "age_band": "34+",
+        "family": "Defender",
+        "grouping": "Position",
+        "median": 17.0,
+        "n": 325
+      },
+      {
+        "age_band": "16-21",
+        "family": "Forward",
+        "grouping": "Position",
+        "median": 19.5,
+        "n": 716
+      },
+      {
+        "age_band": "34+",
+        "family": "Forward",
+        "grouping": "Position",
+        "median": 14.0,
+        "n": 282
+      },
+      {
+        "age_band": "16-21",
+        "family": "Goalkeeper",
+        "grouping": "Position",
+        "median": 29.5,
+        "n": 84
+      },
+      {
+        "age_band": "34+",
+        "family": "Goalkeeper",
+        "grouping": "Position",
+        "median": 15.0,
+        "n": 191
+      },
+      {
+        "age_band": "16-21",
+        "family": "Midfielder",
+        "grouping": "Position",
+        "median": 22.0,
+        "n": 667
+      },
+      {
+        "age_band": "34+",
+        "family": "Midfielder",
+        "grouping": "Position",
+        "median": 15.0,
+        "n": 245
       }
-
-      .tag-list {
-        justify-content: flex-start;
-        min-width: 0;
+    ]
+  },
+  "params": [
+    {
+      "name": "famsel",
+      "select": {
+        "fields": [
+          "family"
+        ],
+        "toggle": false,
+        "type": "point"
+      },
+      "value": [
+        {
+          "family": "Knee / ligament"
+        }
+      ],
+      "views": [
+        "view_f25c43e1373217a5_0"
+      ]
+    },
+    {
+      "bind": {
+        "input": "radio",
+        "name": "Compare by:  ",
+        "options": [
+          "Injury family",
+          "League",
+          "Position"
+        ]
+      },
+      "name": "grp",
+      "value": "Injury family"
+    }
+  ],
+  "resolve": {
+    "scale": {
+      "color": "independent"
+    }
+  },
+  "vconcat": [
+    {
+      "data": {
+        "name": "data-71f89d11a3ca348cde4e4f0ef1eb2504"
+      },
+      "height": 210,
+      "layer": [
+        {
+          "encoding": {
+            "color": {
+              "field": "median",
+              "scale": {
+                "scheme": "reds"
+              },
+              "title": "Median days",
+              "type": "quantitative"
+            },
+            "opacity": {
+              "condition": {
+                "param": "famsel",
+                "value": 1.0
+              },
+              "value": 0.45
+            },
+            "stroke": {
+              "condition": {
+                "param": "famsel",
+                "value": "#1D2630"
+              },
+              "value": "white"
+            },
+            "tooltip": [
+              {
+                "field": "family",
+                "title": "Family",
+                "type": "nominal"
+              },
+              {
+                "field": "age_band",
+                "title": "Age band",
+                "type": "ordinal"
+              },
+              {
+                "field": "median",
+                "title": "Median days out",
+                "type": "quantitative"
+              },
+              {
+                "field": "iqr_str",
+                "title": "Half of these spells lasted",
+                "type": "nominal"
+              },
+              {
+                "field": "range_str",
+                "title": "9 in 10 lasted between",
+                "type": "nominal"
+              },
+              {
+                "field": "n",
+                "title": "Injury spells (n)",
+                "type": "quantitative"
+              }
+            ],
+            "x": {
+              "axis": {
+                "labelAngle": 0
+              },
+              "field": "age_band",
+              "title": "Age band",
+              "type": "ordinal"
+            },
+            "y": {
+              "field": "family",
+              "title": null,
+              "type": "nominal"
+            }
+          },
+          "mark": {
+            "strokeWidth": 2,
+            "type": "rect"
+          },
+          "name": "view_f25c43e1373217a5_0"
+        },
+        {
+          "encoding": {
+            "color": {
+              "condition": {
+                "test": "datum.median > 30",
+                "value": "white"
+              },
+              "value": "#3b3b3b"
+            },
+            "text": {
+              "field": "median",
+              "format": ".0f",
+              "type": "quantitative"
+            },
+            "tooltip": [
+              {
+                "field": "family",
+                "title": "Family",
+                "type": "nominal"
+              },
+              {
+                "field": "age_band",
+                "title": "Age band",
+                "type": "ordinal"
+              },
+              {
+                "field": "median",
+                "title": "Median days out",
+                "type": "quantitative"
+              },
+              {
+                "field": "iqr_str",
+                "title": "Half of these spells lasted",
+                "type": "nominal"
+              },
+              {
+                "field": "range_str",
+                "title": "9 in 10 lasted between",
+                "type": "nominal"
+              },
+              {
+                "field": "n",
+                "title": "Injury spells (n)",
+                "type": "quantitative"
+              }
+            ],
+            "x": {
+              "axis": {
+                "labelAngle": 0
+              },
+              "field": "age_band",
+              "title": "Age band",
+              "type": "ordinal"
+            },
+            "y": {
+              "field": "family",
+              "title": null,
+              "type": "nominal"
+            }
+          },
+          "mark": {
+            "fontSize": 11,
+            "type": "text"
+          }
+        }
+      ],
+      "title": {
+        "subtitle": "Hover any cell for its full distribution · click a row to highlight that family in View 3 (selected row gets a dark outline)",
+        "text": "View 2 — The decline holds within every injury family"
+      },
+      "width": 600
+    },
+    {
+      "data": {
+        "name": "data-2d850131d6983196ee25ff9f472b71f2"
+      },
+      "height": 230,
+      "layer": [
+        {
+          "encoding": {
+            "opacity": {
+              "condition": {
+                "test": "grp !== \"Injury family\" || !length(data(\"famsel_store\")) || vlSelectionTest(\"famsel_store\", datum)",
+                "value": 1.0
+              },
+              "value": 0.35
+            },
+            "x": {
+              "field": "young",
+              "title": "Median days out",
+              "type": "quantitative"
+            },
+            "x2": {
+              "field": "old"
+            },
+            "y": {
+              "field": "family",
+              "sort": {
+                "field": "young",
+                "op": "max",
+                "order": "descending"
+              },
+              "title": null,
+              "type": "nominal"
+            }
+          },
+          "mark": {
+            "color": "#9aa4b2",
+            "strokeWidth": 2.5,
+            "type": "rule"
+          },
+          "transform": [
+            {
+              "filter": "(datum.grouping === grp)"
+            }
+          ]
+        },
+        {
+          "encoding": {
+            "opacity": {
+              "condition": {
+                "test": "grp !== \"Injury family\" || !length(data(\"famsel_store\")) || vlSelectionTest(\"famsel_store\", datum)",
+                "value": 1.0
+              },
+              "value": 0.35
+            },
+            "x": {
+              "field": "old",
+              "type": "quantitative"
+            },
+            "y": {
+              "field": "family",
+              "sort": {
+                "field": "young",
+                "op": "max",
+                "order": "descending"
+              },
+              "title": null,
+              "type": "nominal"
+            }
+          },
+          "mark": {
+            "color": "#b2182b",
+            "filled": true,
+            "shape": "triangle-left",
+            "size": 110,
+            "type": "point"
+          },
+          "transform": [
+            {
+              "filter": "(datum.grouping === grp)"
+            }
+          ]
+        },
+        {
+          "data": {
+            "name": "data-c6e76feb1e85d1af74cddf7d0089314b"
+          },
+          "encoding": {
+            "color": {
+              "field": "age_band",
+              "scale": {
+                "domain": [
+                  "16-21",
+                  "34+"
+                ],
+                "range": [
+                  "#f4a582",
+                  "#b2182b"
+                ]
+              },
+              "title": "Age band",
+              "type": "nominal"
+            },
+            "opacity": {
+              "condition": {
+                "test": "grp !== \"Injury family\" || !length(data(\"famsel_store\")) || vlSelectionTest(\"famsel_store\", datum)",
+                "value": 1.0
+              },
+              "value": 0.35
+            },
+            "tooltip": [
+              {
+                "field": "family",
+                "title": "Group",
+                "type": "nominal"
+              },
+              {
+                "field": "age_band",
+                "title": "Age band",
+                "type": "nominal"
+              },
+              {
+                "field": "median",
+                "title": "Median days out",
+                "type": "quantitative"
+              },
+              {
+                "field": "n",
+                "title": "Injury spells (n)",
+                "type": "quantitative"
+              }
+            ],
+            "x": {
+              "field": "median",
+              "title": "Median days out",
+              "type": "quantitative"
+            },
+            "y": {
+              "field": "family",
+              "sort": {
+                "field": "median",
+                "op": "max",
+                "order": "descending"
+              },
+              "title": null,
+              "type": "nominal"
+            }
+          },
+          "mark": {
+            "size": 130,
+            "type": "circle"
+          },
+          "transform": [
+            {
+              "filter": "(datum.grouping === grp)"
+            }
+          ]
+        }
+      ],
+      "title": {
+        "subtitle": "Each arrow compares AGE GROUPS, not seasons: ages 16-21 (light) to 34+ (dark) — every arrow points toward shorter recovery · switch groups with the buttons below",
+        "text": "View 3 — Conclusion: the reversal holds everywhere (8/8 families · 5/5 leagues · 4/4 positions)"
+      },
+      "width": 600
+    }
+  ]
+}, {actions:false});
+vegaEmbed('#viewC', {
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json",
+  "config": {
+    "axis": {
+      "labelFontSize": 12,
+      "titleFontSize": 13
+    },
+    "title": {
+      "anchor": "start",
+      "fontSize": 15
+    },
+    "view": {
+      "continuousHeight": 300,
+      "continuousWidth": 300,
+      "stroke": null
+    }
+  },
+  "data": {
+    "name": "data-7f5128d200542c231fa136e4db1a2d91"
+  },
+  "datasets": {
+    "data-7f5128d200542c231fa136e4db1a2d91": [
+      {
+        "age_band": "16-21",
+        "median": 22.0,
+        "order": 0,
+        "player_seasons": 1256,
+        "rate": 1.68
+      },
+      {
+        "age_band": "22-25",
+        "median": 18.0,
+        "order": 1,
+        "player_seasons": 2437,
+        "rate": 1.9
+      },
+      {
+        "age_band": "26-29",
+        "median": 18.0,
+        "order": 2,
+        "player_seasons": 2376,
+        "rate": 2.04
+      },
+      {
+        "age_band": "30-33",
+        "median": 18.0,
+        "order": 3,
+        "player_seasons": 1498,
+        "rate": 1.98
+      },
+      {
+        "age_band": "34+",
+        "median": 15.0,
+        "order": 4,
+        "player_seasons": 515,
+        "rate": 2.03
       }
-
-      .chart-frame {
-        padding: 6px;
+    ]
+  },
+  "height": 230,
+  "layer": [
+    {
+      "encoding": {
+        "order": {
+          "field": "order",
+          "type": "ordinal"
+        },
+        "x": {
+          "field": "rate",
+          "scale": {
+            "zero": false
+          },
+          "title": "Injuries per player per season",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "median",
+          "scale": {
+            "zero": false
+          },
+          "title": "Median days out",
+          "type": "quantitative"
+        }
+      },
+      "mark": {
+        "color": "#9aa4b2",
+        "strokeWidth": 2,
+        "type": "line"
       }
-
-      .chart-frame iframe {
-        height: 780px;
+    },
+    {
+      "encoding": {
+        "color": {
+          "field": "age_band",
+          "scale": {
+            "domain": [
+              "16-21",
+              "22-25",
+              "26-29",
+              "30-33",
+              "34+"
+            ],
+            "scheme": "reds"
+          },
+          "title": "Age band",
+          "type": "nominal"
+        },
+        "size": {
+          "field": "player_seasons",
+          "scale": {
+            "range": [
+              150,
+              600
+            ]
+          },
+          "title": "Player-seasons (n)",
+          "type": "quantitative"
+        },
+        "tooltip": [
+          {
+            "field": "age_band",
+            "title": "Age band",
+            "type": "nominal"
+          },
+          {
+            "field": "rate",
+            "title": "Injuries per player per season",
+            "type": "quantitative"
+          },
+          {
+            "field": "median",
+            "title": "Median days out",
+            "type": "quantitative"
+          },
+          {
+            "field": "player_seasons",
+            "title": "Player-seasons (n)",
+            "type": "quantitative"
+          }
+        ],
+        "x": {
+          "field": "rate",
+          "scale": {
+            "zero": false
+          },
+          "title": "Injuries per player per season",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "median",
+          "scale": {
+            "zero": false
+          },
+          "title": "Median days out",
+          "type": "quantitative"
+        }
+      },
+      "mark": {
+        "type": "circle"
+      }
+    },
+    {
+      "encoding": {
+        "text": {
+          "field": "age_band",
+          "type": "nominal"
+        },
+        "x": {
+          "field": "rate",
+          "scale": {
+            "zero": false
+          },
+          "title": "Injuries per player per season",
+          "type": "quantitative"
+        },
+        "y": {
+          "field": "median",
+          "scale": {
+            "zero": false
+          },
+          "title": "Median days out",
+          "type": "quantitative"
+        }
+      },
+      "mark": {
+        "color": "#3b3b3b",
+        "dx": 16,
+        "dy": -12,
+        "fontSize": 11.5,
+        "fontWeight": "bold",
+        "type": "text"
       }
     }
-
-    @media (max-width: 620px) {
-      .summary-grid,
-      .notes {
-        grid-template-columns: 1fr;
-      }
-
-      .hero {
-        padding-top: 52px;
-      }
-
-      .section-header {
-        padding: 24px 20px;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <header class="topbar">
-    <div class="site-shell topbar-inner">
-      <a class="brand" href="#top" aria-label="Home">
-        <span class="brand-mark"></span>
-        <span>Injury Burden Dashboard</span>
-      </a>
-
-      <nav class="nav" aria-label="Dashboard sections">
-        <a href="#monthly">Monthly injuries</a>
-        <a href="#burden">Injury burden</a>
-        <a href="#recovery">Recovery time</a>
-      </nav>
-    </div>
-  </header>
-
-  <main id="top">
-    <section class="site-shell hero">
-      <div class="eyebrow">DATASCI 209 Final Project</div>
-
-      <h1>European Football Injury Burden Dashboard</h1>
-
-      <p class="hero-copy">
-        This project explores injury patterns across Europe’s top football leagues from the 2020/21
-        through 2024/25 seasons. The dashboard combines season timing, league-level injury burden,
-        club drilldowns, and recovery-time patterns to help explain where injuries are concentrated.
-      </p>
-
-      <div class="hero-actions">
-        <a class="button button-primary" href="#burden">View Rohan’s visual</a>
-        <a class="button button-secondary" href="#notes">View design goals</a>
-      </div>
-
-      <div class="summary-grid" aria-label="Project summary">
-        <div class="metric-card">
-          <div class="metric-label">Coverage</div>
-          <div class="metric-value">2020/21–2024/25</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-label">Leagues</div>
-          <div class="metric-value">Top 5 Europe</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-label">Focus</div>
-          <div class="metric-value">Injury burden</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-label">Interaction</div>
-          <div class="metric-value">Hover + click</div>
-        </div>
-      </div>
-    </section>
-
-    <section id="monthly" class="site-shell section">
-      <div class="section-header">
-        <div>
-          <div class="section-kicker">Sagar Patel</div>
-          <h2>Monthly injury counts by league and season</h2>
-          <p class="section-description">
-            This view is meant to show when injuries happen most often during the season and whether
-            certain months or seasons stand out as outliers.
-          </p>
-        </div>
-
-        <div class="tag-list">
-          <span class="tag">Monthly patterns</span>
-          <span class="tag">Outliers</span>
-          <span class="tag">Season comparison</span>
-        </div>
-      </div>
-
-      <div class="chart-frame">
-        <div class="placeholder">
-          <h3>Add Sagar’s exported HTML here</h3>
-          <p>
-            Once Sagar exports his Altair chart, upload it to this GitHub repo and name it
-            <code>sagar.html</code>. Then replace this placeholder with an iframe.
-          </p>
-          <p><code>&lt;iframe src="sagar.html"&gt;&lt;/iframe&gt;</code></p>
-        </div>
-      </div>
-    </section>
-
-    <section id="burden" class="site-shell section wide-section">
-      <div class="section-header">
-        <div>
-          <div class="section-kicker">Rohan Maheshwari</div>
-          <h2>League-season injury burden and club drilldown</h2>
-          <p class="section-description">
-            The heatmap compares average games missed per club-season across leagues and seasons.
-            Click a cell to lock the club detail chart and see which clubs drove that value.
-          </p>
-        </div>
-
-        <div class="tag-list">
-          <span class="tag">Click to lock</span>
-          <span class="tag">Club drilldown</span>
-          <span class="tag">Games missed</span>
-        </div>
-      </div>
-
-      <div class="chart-frame">
-        <iframe
-          src="rohan_injury_burden_dashboard.html"
-          title="Interactive injury burden heatmap and club drilldown">
-        </iframe>
-      </div>
-    </section>
-
-    <section id="recovery" class="site-shell section">
-      <div class="section-header">
-        <div>
-          <div class="section-kicker">Jeremy Lee</div>
-          <h2>Player age and injury recovery time</h2>
-          <p class="section-description">
-            This view is meant to compare injury recovery time across age, injury family, league,
-            and position while showing whether older players recover differently.
-          </p>
-        </div>
-
-        <div class="tag-list">
-          <span class="tag">Recovery days</span>
-          <span class="tag">Age patterns</span>
-          <span class="tag">Filters</span>
-        </div>
-      </div>
-
-      <div class="chart-frame">
-        <div class="placeholder">
-          <h3>Add Jeremy’s exported HTML here</h3>
-          <p>
-            Once Jeremy exports his dashboard, upload it to this GitHub repo and name it
-            <code>jeremy.html</code>. Then replace this placeholder with an iframe.
-          </p>
-          <p><code>&lt;iframe src="jeremy.html"&gt;&lt;/iframe&gt;</code></p>
-        </div>
-      </div>
-    </section>
-
-    <section id="notes" class="site-shell notes" aria-label="Design goals">
-      <div class="note-card">
-        <h3>Goal 1: make interactions obvious</h3>
-        <p>
-          Usability testing showed that hover, click, and filtering features need short instructions
-          near the relevant chart.
-        </p>
-      </div>
-
-      <div class="note-card">
-        <h3>Goal 2: keep values readable</h3>
-        <p>
-          Printed values, clear labels, and enough spacing help users answer tasks without guessing
-          from color or position alone.
-        </p>
-      </div>
-
-      <div class="note-card">
-        <h3>Goal 3: connect overview to detail</h3>
-        <p>
-          The dashboard starts with high-level league and season patterns, then uses drilldowns to
-          explain what is driving the values.
-        </p>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-shell footer">
-    DATASCI 209 · Team 2 · European Football Injury Burden Dashboard
-  </footer>
-</body>
-</html>
-"""
-
-path = Path("/mnt/data/index.html")
-path.write_text(html, encoding="utf-8")
-print(path)
+  ],
+  "title": {
+    "subtitle": "Each dot is an age band (size = player-seasons, matching View 1's n encoding) · the path moves right (more injuries) and down (faster recovery) with age",
+    "text": "View 4 — Aging shifts the injury profile: more often, but shorter"
+  },
+  "width": 600
+}, {actions:false});
+</script>
+</body></html>
