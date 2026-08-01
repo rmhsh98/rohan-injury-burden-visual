@@ -1,60 +1,555 @@
+<iframe src="jeremy.html" title="Player age and injury recovery time"></iframe>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>European Football Injury Burden</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>European Football Injury Burden Dashboard</title>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-      background-color: #fafafa;
-      color: #222;
+    :root {
+      --bg: #f7f3ee;
+      --card: #ffffff;
+      --ink: #1f2933;
+      --muted: #5b6472;
+      --border: #e3d8cc;
+      --accent: #c94b2c;
+      --accent-dark: #8f2f1c;
+      --accent-soft: #fff0e8;
+      --gold-soft: #fff7dc;
+      --shadow: 0 18px 45px rgba(31, 41, 51, 0.10);
+      --radius: 22px;
     }
 
-    h1 {
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 180, 115, 0.24), transparent 32rem),
+        radial-gradient(circle at top right, rgba(201, 75, 44, 0.14), transparent 30rem),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .site-shell {
+      width: min(1180px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(14px);
+      background: rgba(247, 243, 238, 0.86);
+      border-bottom: 1px solid rgba(227, 216, 204, 0.8);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 16px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #f7b267);
+      box-shadow: 0 8px 18px rgba(201, 75, 44, 0.25);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a {
+      color: var(--muted);
+      font-size: 0.94rem;
+      font-weight: 700;
+      padding: 9px 12px;
+      border-radius: 999px;
+    }
+
+    .nav a:hover {
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+    }
+
+    .hero {
+      padding: 76px 0 42px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      border: 1px solid #ffd5c2;
+      border-radius: 999px;
+      padding: 8px 13px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      max-width: 980px;
+      font-size: clamp(2.35rem, 6vw, 5.25rem);
+      line-height: 0.98;
+      letter-spacing: -0.065em;
+    }
+
+    .hero-copy {
+      max-width: 880px;
+      color: var(--muted);
+      font-size: 1.17rem;
+      line-height: 1.65;
+      margin: 24px 0 0;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      border-radius: 999px;
+      padding: 0 18px;
+      font-weight: 800;
+      border: 1px solid transparent;
+    }
+
+    .button-primary {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .button-secondary {
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--border);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 42px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 28px rgba(31, 41, 51, 0.06);
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       margin-bottom: 8px;
     }
 
-    p {
-      max-width: 900px;
-      line-height: 1.5;
+    .metric-value {
+      font-size: 1.55rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
     }
 
-    .chart-section {
-      margin-top: 30px;
-      padding: 20px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 10px;
+    .section {
+      margin: 34px 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    iframe {
+    .section-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 24px;
+      padding: 30px 34px 24px;
+      border-bottom: 1px solid var(--border);
+      background:
+        linear-gradient(135deg, rgba(255, 240, 232, 0.72), rgba(255, 255, 255, 0.95));
+    }
+
+    .section-kicker {
+      color: var(--accent-dark);
+      font-size: 0.84rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: clamp(1.7rem, 3vw, 2.35rem);
+      line-height: 1.1;
+      letter-spacing: -0.045em;
+    }
+
+    .section-description {
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 12px 0 0;
+      max-width: 780px;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      min-width: 260px;
+    }
+
+    .tag {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .chart-frame {
+      padding: 24px;
+      background: #fff;
+    }
+
+    .chart-frame iframe {
+      display: block;
       width: 100%;
-      height: 850px;
-      border: none;
+      min-height: 860px;
+      border: 0;
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .placeholder {
+      border: 2px dashed #d8c8b7;
+      border-radius: 18px;
+      padding: 42px 28px;
+      background: linear-gradient(135deg, #fffdf8, #fff7ef);
+      color: var(--muted);
+    }
+
+    .placeholder h3 {
+      margin: 0 0 10px;
+      color: var(--ink);
+      font-size: 1.3rem;
+      letter-spacing: -0.03em;
+    }
+
+    .placeholder code {
+      background: #fff;
+      border: 1px solid var(--border);
+      padding: 3px 6px;
+      border-radius: 7px;
+      color: var(--accent-dark);
+      font-weight: 800;
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 34px 0 70px;
+    }
+
+    .note-card {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+    }
+
+    .note-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.15rem;
+      letter-spacing: -0.025em;
+    }
+
+    .note-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .footer {
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding: 28px 0 44px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .site-shell {
+        width: min(100% - 28px, 1180px);
+      }
+
+      .topbar-inner,
+      .section-header {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+      }
+
+      .topbar-inner {
+        align-items: flex-start;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .summary-grid,
+      .notes {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .tag-list {
+        justify-content: flex-start;
+        min-width: 0;
+      }
+
+      .chart-frame {
+        padding: 12px;
+      }
+
+      .chart-frame iframe {
+        min-height: 760px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .summary-grid,
+      .notes {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 52px;
+      }
+
+      .section-header {
+        padding: 24px 20px;
+      }
     }
   </style>
 </head>
 
 <body>
+  <header class="topbar">
+    <div class="site-shell topbar-inner">
+      <a class="brand" href="#top" aria-label="Home">
+        <span class="brand-mark"></span>
+        <span>Injury Burden Dashboard</span>
+      </a>
 
-  <h1>European Football Injury Burden Dashboard</h1>
+      <nav class="nav" aria-label="Dashboard sections">
+        <a href="#monthly">Monthly injuries</a>
+        <a href="#burden">Injury burden</a>
+        <a href="#recovery">Recovery time</a>
+      </nav>
+    </div>
+  </header>
 
-  <p>
-    This interactive visualization explores injury burden across Europe’s top football leagues
-    from the 2020/21 through 2024/25 seasons. The heatmap compares average games missed
-    by league and season, while the club chart shows which clubs drove each selected value.
-  </p>
+  <main id="top">
+    <section class="site-shell hero">
+      <div class="eyebrow">DATASCI 209 Final Project</div>
 
-  <p>
-    Hover over a league-season cell in the heatmap to update the club detail chart.
-  </p>
+      <h1>European Football Injury Burden Dashboard</h1>
 
-  <div class="chart-section">
-    <h2>League-Season Injury Burden and Club Drilldown</h2>
-    <iframe src="rohan_injury_burden_dashboard.html"></iframe>
-  </div>
+      <p class="hero-copy">
+        This project explores injury patterns across Europe’s top football leagues from the 2020/21
+        through 2024/25 seasons. The dashboard combines season timing, league-level injury burden,
+        club drilldowns, and recovery-time patterns to help explain where injuries are concentrated.
+      </p>
 
+      <div class="hero-actions">
+        <a class="button button-primary" href="#burden">View Rohan’s visual</a>
+        <a class="button button-secondary" href="#notes">Design goals</a>
+      </div>
+
+      <div class="summary-grid" aria-label="Project summary">
+        <div class="metric-card">
+          <div class="metric-label">Coverage</div>
+          <div class="metric-value">2020/21–2024/25</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Leagues</div>
+          <div class="metric-value">Top 5 Europe</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Focus</div>
+          <div class="metric-value">Injury burden</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Interaction</div>
+          <div class="metric-value">Hover + click</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="monthly" class="site-shell section">
+      <div class="section-header">
+        <div>
+          <div class="section-kicker">Sagar Patel</div>
+          <h2>Monthly injury counts by league and season</h2>
+          <p class="section-description">
+            This view is meant to show when injuries happen most often during the season and whether
+            certain months or seasons stand out as outliers.
+          </p>
+        </div>
+        <div class="tag-list">
+          <span class="tag">Monthly patterns</span>
+          <span class="tag">Outliers</span>
+          <span class="tag">Season comparison</span>
+        </div>
+      </div>
+
+      <div class="chart-frame">
+        <div class="placeholder">
+          <h3>Add Sagar’s exported HTML here</h3>
+          <p>
+            Once Sagar exports his Altair chart, upload it to this GitHub repo and name it
+            <code>sagar.html</code>. Then replace this placeholder with:
+          </p>
+          <p><code>&lt;iframe src="sagar.html"&gt;&lt;/iframe&gt;</code></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="burden" class="site-shell section">
+      <div class="section-header">
+        <div>
+          <div class="section-kicker">Rohan Maheshwari</div>
+          <h2>League-season injury burden and club drilldown</h2>
+          <p class="section-description">
+            The heatmap compares average games missed per club-season across leagues and seasons.
+            Click a cell to lock the club detail chart and see which clubs drove that value.
+          </p>
+        </div>
+        <div class="tag-list">
+          <span class="tag">Click to lock</span>
+          <span class="tag">Club drilldown</span>
+          <span class="tag">Games missed</span>
+        </div>
+      </div>
+
+      <div class="chart-frame">
+        <iframe
+          src="rohan_bulleted_injury_burden_dashboard.html"
+          title="Interactive injury burden heatmap and club drilldown">
+        </iframe>
+      </div>
+    </section>
+
+    <section id="recovery" class="site-shell section">
+      <div class="section-header">
+        <div>
+          <div class="section-kicker">Jeremy Lee</div>
+          <h2>Player age and injury recovery time</h2>
+          <p class="section-description">
+            This view is meant to compare injury recovery time across age, injury family, league,
+            and position while showing whether older players recover differently.
+          </p>
+        </div>
+        <div class="tag-list">
+          <span class="tag">Recovery days</span>
+          <span class="tag">Age patterns</span>
+          <span class="tag">Filters</span>
+        </div>
+      </div>
+
+      <div class="chart-frame">
+        <div class="placeholder">
+          <h3>Add Jeremy’s exported HTML here</h3>
+          <p>
+            Once Jeremy exports his dashboard, upload it to this GitHub repo and name it
+            <code>jeremy.html</code>. Then replace this placeholder with:
+          </p>
+          <p><code>&lt;iframe src="jeremy.html"&gt;&lt;/iframe&gt;</code></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="notes" class="site-shell notes" aria-label="Design goals">
+      <div class="note-card">
+        <h3>Goal 1: make interactions obvious</h3>
+        <p>
+          Usability testing showed that hover, click, and filtering features need short instructions
+          near the relevant chart.
+        </p>
+      </div>
+
+      <div class="note-card">
+        <h3>Goal 2: keep values readable</h3>
+        <p>
+          Printed values, clear labels, and enough spacing help users answer tasks without guessing
+          from color or position alone.
+        </p>
+      </div>
+
+      <div class="note-card">
+        <h3>Goal 3: connect overview to detail</h3>
+        <p>
+          The dashboard starts with high-level league and season patterns, then uses drilldowns to
+          explain what is driving the values.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-shell footer">
+    DATASCI 209 · Team 2 · European Football Injury Burden Dashboard
+  </footer>
 </body>
 </html>
