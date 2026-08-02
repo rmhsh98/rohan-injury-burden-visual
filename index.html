@@ -216,9 +216,18 @@
       border-radius: 10px;
     }
 
-    .iframe-sagar { height: 820px; }
-    .iframe-rohan { height: 770px; }
-    .iframe-jeremy { height: 1050px; }
+    .iframe-sagar { 
+      height: 600px;
+       display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .iframe-rohan {
+      height: 600px;
+    }
+    .iframe-jeremy {
+      height: 1800px; 
+    }
 
     .takeaway-grid {
       display: grid;
@@ -238,6 +247,10 @@
 
     .takeaway b { color: var(--red); }
 
+    .marks{
+      width: 100%;
+      max-width: 1200px;
+    }
     .mini-note {
       color: #4b5563;
       background: #fff;
@@ -271,12 +284,12 @@
       .takeaway-grid {
         grid-template-columns: repeat(2, 1fr);
       }
-
+/* 
       .iframe-sagar,
       .iframe-rohan,
       .iframe-jeremy {
         height: 850px;
-      }
+      } */
     }
 
     @media (max-width: 620px) {
@@ -361,11 +374,11 @@
     <div class="chart-shell">
       <div class="chart-topline">
         <strong>Seasonal injury timing visual</strong>
-        <a class="open-link" href="sagar.html" target="_blank" rel="noopener">Open full screen</a>
+        <!-- <a class="open-link" href="sagar.html" target="_blank" rel="noopener">Open full screen</a> -->
       </div>
       <iframe
         class="iframe-sagar"
-        src="sagar.html"
+        src="static/sagar.html"
         title="Sagar seasonal injury timing visualization">
       </iframe>
     </div>
@@ -392,11 +405,11 @@
     <div class="chart-shell">
       <div class="chart-topline">
         <strong>League-season burden heatmap and club drilldown</strong>
-        <a class="open-link" href="rohan.html" target="_blank" rel="noopener">Open full screen</a>
+        <!-- <a class="open-link" href="rohan.html" target="_blank" rel="noopener">Open full screen</a> -->
       </div>
       <iframe
         class="iframe-rohan"
-        src="rohan.html"
+        src="static/rohan.html"
         title="Rohan injury burden heatmap and club drilldown">
       </iframe>
     </div>
@@ -446,11 +459,11 @@
     <div class="chart-shell">
       <div class="chart-topline">
         <strong>Age and recovery-time visual</strong>
-        <a class="open-link" href="jeremy.html" target="_blank" rel="noopener">Open full screen</a>
+        <!-- <a class="open-link" href="jeremy.html" target="_blank" rel="noopener">Open full screen</a> -->
       </div>
       <iframe
         class="iframe-jeremy"
-        src="jeremy.html"
+        src="static/jeremy.html"
         title="Jeremy age and recovery time visualization">
       </iframe>
     </div>
