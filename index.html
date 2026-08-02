@@ -72,6 +72,17 @@
 
     .wide-section { max-width: 1540px; }
 
+    #hypothesis-2.wide-section {
+      max-width: 100vw;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    #hypothesis-2 .chart-shell {
+      overflow: hidden;
+      padding: 6px;
+    }
+
     .kicker {
       color: var(--red);
       font-weight: 800;
@@ -223,7 +234,8 @@
       align-items: center;
     }
     .iframe-rohan {
-      height: 600px;
+      height: 760px;
+      overflow: hidden;
     }
     .iframe-jeremy {
       height: 1800px; 
@@ -378,7 +390,7 @@
       </div>
       <iframe
         class="iframe-sagar"
-        src="static/sagar.html"
+        src="sagar.html"
         title="Sagar seasonal injury timing visualization">
       </iframe>
     </div>
@@ -409,8 +421,10 @@
       </div>
       <iframe
         class="iframe-rohan"
-        src="static/rohan.html"
-        title="Rohan injury burden heatmap and club drilldown">
+        src="rohan.html"
+        title="Rohan injury burden heatmap and club drilldown"
+        scrolling="no"
+        onload="fitRohanFrame(this)">
       </iframe>
     </div>
 
@@ -463,7 +477,7 @@
       </div>
       <iframe
         class="iframe-jeremy"
-        src="static/jeremy.html"
+        src="jeremy.html"
         title="Jeremy age and recovery time visualization">
       </iframe>
     </div>
@@ -499,5 +513,56 @@
     Data: European football injury records, 2020/21–2024/25 · DATASCI 209 Section 2 ·
     Sagar Patel · Rohan Maheshwari · Jeremy Lee © 2026
   </footer>
+
+<script>
+  function fitRohanFrame(frame) {
+    function applyScale() {
+      try {
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        if (!doc || !doc.body || !doc.documentElement) return;
+
+        const body = doc.body;
+        const root = doc.documentElement;
+
+        body.style.transform = "none";
+        body.style.transformOrigin = "top left";
+        body.style.width = "max-content";
+        body.style.margin = "0";
+        root.style.overflow = "hidden";
+        body.style.overflow = "hidden";
+
+        const naturalWidth = Math.max(
+          body.scrollWidth,
+          root.scrollWidth,
+          body.offsetWidth,
+          root.offsetWidth
+        );
+
+        const naturalHeight = Math.max(
+          body.scrollHeight,
+          root.scrollHeight,
+          body.offsetHeight,
+          root.offsetHeight
+        );
+
+        const availableWidth = frame.clientWidth - 8;
+        const scale = Math.min(1, availableWidth / naturalWidth);
+
+        body.style.transform = `scale(${scale})`;
+        body.style.width = `${naturalWidth}px`;
+
+        frame.style.height = `${Math.ceil(naturalHeight * scale) + 18}px`;
+      } catch (error) {
+        frame.style.height = "760px";
+      }
+    }
+
+    setTimeout(applyScale, 100);
+    setTimeout(applyScale, 700);
+    setTimeout(applyScale, 1500);
+    window.addEventListener("resize", applyScale);
+  }
+</script>
+
 </body>
 </html>
